@@ -5,18 +5,38 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RSS_Reader"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="460" Width="800" Name="RSSReader"
+        ResizeMode="NoResize">
+    <Window.Resources>
+        <XmlDataProvider x:Key="DataRss" XPath="//item" Source="https://azurecomcdn.azureedge.net/de-de/updates/feed/">
+        </XmlDataProvider>
+    </Window.Resources>
     <Grid>
-        <TextBox Name="FilterBox" Margin="10,10,444,396">
-            <TextBox.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </TextBox.RenderTransform>
-            Filter
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left">Filter</Label>
+        <TextBox Name="FilterBox"  HorizontalAlignment="Left"  Grid.Row="0" Grid.Column="1" Width="400" TextChanged="FilterBox_TextChanged">
         </TextBox>
-        <ItemsControl Name="RSSViewListe"></ItemsControl>
+
+        <ListBox Name="FeedDisplay" ItemsSource="{Binding Source={StaticResource DataRss}}" Grid.Row="1" MaxHeight="360" MinHeight="360">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Tag="{Binding XPath=link, Path=InnerText}">
+                        <Grid Width="{Binding ElementName=FeedDisplay, Path=ActualWidth}">
+                            <TextBlock Text="{Binding XPath=title}" Tag="{Binding XPath=link, Path=InnerText}" PreviewMouseLeftButtonDown="GoToUpdate_DoubleClick" HorizontalAlignment="Left"></TextBlock>
+                            <TextBlock Text="{Binding XPath=pubDate}" Tag="{Binding XPath=link, Path=InnerText}" PreviewMouseLeftButtonDown="GoToUpdate_DoubleClick" HorizontalAlignment="Right"></TextBlock>
+                        </Grid>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Orientation="Vertical" DataContext="{Binding ElementName=FeedDisplay,Path=SelectedItem}" Grid.Row="2"  HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button Name="GoToUpdate" Tag="{Binding XPath=link, Path=InnerText}" Click="GoToUpdate_OnClick" Width="120" Height="25">
+                Öffne link
+            </Button>
+        </StackPanel>
     </Grid>
 </Window>

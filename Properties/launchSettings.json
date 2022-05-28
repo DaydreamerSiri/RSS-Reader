@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RSS-Reader": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
