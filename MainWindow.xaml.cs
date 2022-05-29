@@ -1,21 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Xml;
-using System.ComponentModel;
 
 namespace RSS_Reader
 {
@@ -25,8 +15,8 @@ namespace RSS_Reader
     public partial class MainWindow : Window
     {
 
-        private GridViewColumnHeader lastHeaderClicked = null;
-        private ListSortDirection lastDirection = ListSortDirection.Ascending;
+        GridViewColumnHeader _lastHeaderClicked = null;
+        ListSortDirection _lastDirection = ListSortDirection.Ascending;
 
         public MainWindow()
         {
@@ -83,27 +73,73 @@ namespace RSS_Reader
         {
 
 
-
             //((GridViewColumnHeader)e.OriginalSource).Column.Header.ToString() == "Datum"
-            if (!(e.OriginalSource is GridViewColumnHeader ch)) return;
-            var dir = ListSortDirection.Ascending;
-            if (ch == lastHeaderClicked && lastDirection == ListSortDirection.Ascending)
-                dir = ListSortDirection.Descending;
-            SortColumnHeaderContent(ch, dir);
-            lastHeaderClicked = ch; lastDirection = dir;
+            GridViewColumnHeader? headerClicked = e.OriginalSource as GridViewColumnHeader;
+            ListSortDirection direction;
+
+            if (headerClicked != null)
+            {
+                if (headerClicked.Role != GridViewColumnHeaderRole.Padding)
+                {
+                    if (headerClicked != _lastHeaderClicked)
+                    {
+                        direction = ListSortDirection.Ascending;
+                    }
+                    else
+                    {
+                        if (_lastDirection == ListSortDirection.Ascending)
+                        {
+                            direction = ListSortDirection.Descending;
+                        }
+                        else
+                        {
+                            direction = ListSortDirection.Ascending;
+                        }
+                    }
+
+                    var columnBinding = headerClicked.Column.DisplayMemberBinding as Binding;
+                    var sortBy = columnBinding?.Path.Path ?? headerClicked.Column.Header as string;
+
+                    this.SortByColumnHeader(sortBy, direction);
+
+                    if (direction == ListSortDirection.Ascending)
+                    {
+                        headerClicked.Column.HeaderTemplate =
+                          Resources["HeaderTemplateArrowUp"] as DataTemplate;
+                    }
+                    else
+                    {
+                        headerClicked.Column.HeaderTemplate =
+                          Resources["HeaderTemplateArrowDown"] as DataTemplate;
+                    }
+
+                    // Remove arrow from previously sorted header
+                    if (_lastHeaderClicked != null && _lastHeaderClicked != headerClicked)
+                    {
+                        _lastHeaderClicked.Column.HeaderTemplate = null;
+                    }
+
+                    _lastHeaderClicked = headerClicked;
+                    _lastDirection = direction;
+                }
+            }
 
 
         }
 
-        private void SortColumnHeaderContent(GridViewColumnHeader ch, ListSortDirection dir)
+        private void SortByColumnHeader(string sortBy, ListSortDirection direction)
         {
-            var bn = (ch.Column.DisplayMemberBinding as Binding)?.Path.Path;
-            bn = bn ?? ch.Column.Header as string;
-            var dv = CollectionViewSource.GetDefaultView(FeedDisplay.ItemsSource);
-            dv.SortDescriptions.Clear();
-            var sd = new SortDescription(bn, dir);
-            dv.SortDescriptions.Add(sd);
-            dv.Refresh();
+            ListCollectionView dataView =
+              (ListCollectionView)CollectionViewSource.GetDefaultView(FeedDisplay.ItemsSource);
+            dataView.SortDescriptions.Clear();
+            if (String.Equals(sortBy, "Datum"))
+            {
+                dataView.CustomSort = new DateTimeComparer(direction);
+            }
+            else if (String.Equals(sortBy, "Artikel")){
+                dataView.SortDescriptions.Add(new SortDescription("title", direction));
+            }
+            dataView.Refresh();
         }
 
 
