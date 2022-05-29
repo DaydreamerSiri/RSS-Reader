@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Xml;
+using System.ComponentModel;
 
 namespace RSS_Reader
 {
@@ -23,18 +24,18 @@ namespace RSS_Reader
     /// </summary>
     public partial class MainWindow : Window
     {
-        Reader reader = new Reader("https://azurecomcdn.azureedge.net/de-de/updates/feed/");
+
+        private GridViewColumnHeader lastHeaderClicked = null;
+        private ListSortDirection lastDirection = ListSortDirection.Ascending;
 
         public MainWindow()
         {
             InitializeComponent();
-            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(FeedDisplay.ItemsSource);
-
         }
 
         private void GoToUpdate_OnClick(object sender, RoutedEventArgs e)
         {
-            this.OpenBrowser((sender as Button).Tag as string);   
+            this.OpenBrowser((sender as Button).Tag as string);
         }
 
         private void GoToUpdate_DoubleClick(object sender, RoutedEventArgs e)
@@ -50,7 +51,7 @@ namespace RSS_Reader
             }
             catch
             {
-                // hack because of this: https://github.com/dotnet/corefx/issues/10361
+                // hack wegen dieses Fehlers: https://github.com/dotnet/corefx/issues/10361
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     Path = Path.Replace("&", "^&");
@@ -74,11 +75,37 @@ namespace RSS_Reader
 
         private void FilterBox_TextChanged(object sender, RoutedEventArgs e)
         {
-            //CollectionViewSource.GetDefaultView(FeedDisplay.ItemsSource).Refresh();
-
             FeedDisplay.Items.Filter = target => ((XmlElement)target)["title"].InnerText.Contains(FilterBox.Text);
 
         }
+
+        private void FeedDisplayHeader_OnClick(object sender, RoutedEventArgs e)
+        {
+
+
+
+            //((GridViewColumnHeader)e.OriginalSource).Column.Header.ToString() == "Datum"
+            if (!(e.OriginalSource is GridViewColumnHeader ch)) return;
+            var dir = ListSortDirection.Ascending;
+            if (ch == lastHeaderClicked && lastDirection == ListSortDirection.Ascending)
+                dir = ListSortDirection.Descending;
+            SortColumnHeaderContent(ch, dir);
+            lastHeaderClicked = ch; lastDirection = dir;
+
+
+        }
+
+        private void SortColumnHeaderContent(GridViewColumnHeader ch, ListSortDirection dir)
+        {
+            var bn = (ch.Column.DisplayMemberBinding as Binding)?.Path.Path;
+            bn = bn ?? ch.Column.Header as string;
+            var dv = CollectionViewSource.GetDefaultView(FeedDisplay.ItemsSource);
+            dv.SortDescriptions.Clear();
+            var sd = new SortDescription(bn, dir);
+            dv.SortDescriptions.Add(sd);
+            dv.Refresh();
+        }
+
 
     }
 }

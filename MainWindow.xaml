@@ -10,29 +10,41 @@
     <Window.Resources>
         <XmlDataProvider x:Key="DataRss" XPath="//item" Source="https://azurecomcdn.azureedge.net/de-de/updates/feed/">
         </XmlDataProvider>
+        <local:StringToDateTimeConverter x:Key="DateTimeConverter"></local:StringToDateTimeConverter>
     </Window.Resources>
     <Grid>
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Label Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left">Filter</Label>
-        <TextBox Name="FilterBox"  HorizontalAlignment="Left"  Grid.Row="0" Grid.Column="1" Width="400" TextChanged="FilterBox_TextChanged">
-        </TextBox>
 
-        <ListBox Name="FeedDisplay" ItemsSource="{Binding Source={StaticResource DataRss}}" Grid.Row="1" MaxHeight="360" MinHeight="360">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal" Tag="{Binding XPath=link, Path=InnerText}">
-                        <Grid Width="{Binding ElementName=FeedDisplay, Path=ActualWidth}">
-                            <TextBlock Text="{Binding XPath=title}" Tag="{Binding XPath=link, Path=InnerText}" PreviewMouseLeftButtonDown="GoToUpdate_DoubleClick" HorizontalAlignment="Left"></TextBlock>
-                            <TextBlock Text="{Binding XPath=pubDate}" Tag="{Binding XPath=link, Path=InnerText}" PreviewMouseLeftButtonDown="GoToUpdate_DoubleClick" HorizontalAlignment="Right"></TextBlock>
-                        </Grid>
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        <Grid>
+            <Label>Filter</Label>
+            <TextBox Name="FilterBox"  Width="400" TextChanged="FilterBox_TextChanged" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="36,0,0,0"></TextBox>
+        </Grid>
+        <ListView Name="FeedDisplay" ItemsSource="{Binding Source={StaticResource DataRss}}" Grid.Row="1" MaxHeight="360" MinHeight="360" GridViewColumnHeader.Click="FeedDisplayHeader_OnClick">
+            <ListView.View>
+                <GridView AllowsColumnReorder="True">
+                    <GridViewColumn x:Name="FeedArtikel" Header="Artikel">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding XPath=title, Path=InnerText}" PreviewMouseDown="GoToUpdate_DoubleClick" Tag="{Binding XPath=link, Path=InnerText}"></TextBlock>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn x:Name="FeedDatum" Header="Datum" >
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding XPath=pubDate, Converter={StaticResource DateTimeConverter}}"></TextBlock>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+
+            </ListView.View>
+        </ListView>
         <StackPanel Orientation="Vertical" DataContext="{Binding ElementName=FeedDisplay,Path=SelectedItem}" Grid.Row="2"  HorizontalAlignment="Center" VerticalAlignment="Center">
             <Button Name="GoToUpdate" Tag="{Binding XPath=link, Path=InnerText}" Click="GoToUpdate_OnClick" Width="120" Height="25">
                 Öffne link
