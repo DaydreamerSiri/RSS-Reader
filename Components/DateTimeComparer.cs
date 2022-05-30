@@ -6,6 +6,9 @@ namespace RSS_Reader.Components
 {
     internal class DateTimeComparer : IComparer
     {
+        string dateTimeValA;
+        string dateTimeValB;
+
         ListSortDirection SortDirection;
         public DateTimeComparer(ListSortDirection direction)
         {
@@ -16,8 +19,7 @@ namespace RSS_Reader.Components
         {
             XmlElement xmlElementA = (XmlElement)x;
             XmlElement xmlElementB = (XmlElement)y;
-            string dateTimeValA = "";
-            string dateTimeValB = "";
+            
             foreach (XmlElement childElement in xmlElementA.ChildNodes)
             {
                 if (childElement.Name == "pubDate")

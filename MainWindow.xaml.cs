@@ -38,7 +38,14 @@ namespace RSS_Reader
         {
             try
             {
+                if(Path == null)
+                {
+                    MessageBox.Show("Bitte klicken sie auf einen Eintrag zum öffnen", "Kein Eintrag Ausgewählt", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
                 Process.Start(Path);
+                
+                
             }
             catch
             {
@@ -56,6 +63,7 @@ namespace RSS_Reader
                 {
                     Process.Start("open", Path);
                 }
+                
                 else
                 {
                     MessageBox.Show("Bitte nutzen sie einen unterstütztes System (Win/Lin/Mac)", "Falsches Betriebssystem", MessageBoxButton.OK, MessageBoxImage.Error);

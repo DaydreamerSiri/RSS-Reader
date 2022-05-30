@@ -5,8 +5,6 @@ using System.Windows.Data;
 
 namespace RSS_Reader.Components
 {
-
-
     [ValueConversion(typeof(DateTime), typeof(string))]
     internal class StringToDateTimeConverter : IValueConverter
     {
