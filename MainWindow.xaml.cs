@@ -80,9 +80,6 @@ namespace RSS_Reader
 
         private void FeedDisplayHeader_OnClick(object sender, RoutedEventArgs e)
         {
-
-
-            //((GridViewColumnHeader)e.OriginalSource).Column.Header.ToString() == "Datum"
             GridViewColumnHeader? headerClicked = e.OriginalSource as GridViewColumnHeader;
             ListSortDirection direction;
 
@@ -110,23 +107,6 @@ namespace RSS_Reader
                     var sortBy = columnBinding?.Path.Path ?? headerClicked.Column.Header as string;
 
                     this.SortByColumnHeader(sortBy, direction);
-
-                    if (direction == ListSortDirection.Ascending)
-                    {
-                        headerClicked.Column.HeaderTemplate =
-                          Resources["HeaderTemplateArrowUp"] as DataTemplate;
-                    }
-                    else
-                    {
-                        headerClicked.Column.HeaderTemplate =
-                          Resources["HeaderTemplateArrowDown"] as DataTemplate;
-                    }
-
-                    // Remove arrow from previously sorted header
-                    if (_lastHeaderClicked != null && _lastHeaderClicked != headerClicked)
-                    {
-                        _lastHeaderClicked.Column.HeaderTemplate = null;
-                    }
 
                     _lastHeaderClicked = headerClicked;
                     _lastDirection = direction;
